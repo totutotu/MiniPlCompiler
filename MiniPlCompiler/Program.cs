@@ -13,7 +13,6 @@ namespace MiniPlCompiler
       string program = reader.read("../programs/integer_print.mpl");
       if (program != null)
       {
-        Console.Write(program);
         Scanner scanner = new Scanner(program);
         scanner.scan();
       }
