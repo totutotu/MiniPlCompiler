@@ -203,6 +203,30 @@ namespace LexicalAnalysis
         {
           tokens.Add(new Token() { Kind = "Type", Lexeme = token });
         }
+        else if (token == "end" || token == "in" || token == "do")
+        {
+          tokens.Add(new Token() { Kind = "ForWords", Lexeme = token });
+        }
+        else if (token == "for")
+        {
+          tokens.Add(new Token() { Kind = "For", Lexeme = token });
+        }
+        else if (token == "print")
+        {
+          tokens.Add(new Token() { Kind = "Print", Lexeme = token });
+        }
+        else if (token == "assert")
+        {
+          tokens.Add(new Token() { Kind = "Assert", Lexeme = token });
+        }
+        else if (token == "read")
+        {
+          tokens.Add(new Token() { Kind = "Read", Lexeme = token });
+        }
+        else if (token == "var")
+        {
+          tokens.Add(new Token() { Kind = "Var", Lexeme = token });
+        }
         else
         {
           tokens.Add(new Token() { Kind = "ResWord", Lexeme = token });
@@ -214,33 +238,69 @@ namespace LexicalAnalysis
       }
       else if (token == ":=")
       {
-          tokens.Add(new Token() { Kind = "Assign", Lexeme = token });
+        tokens.Add(new Token() { Kind = "Assign", Lexeme = token });
 
       }
       else if (token == ":")
       {
-          tokens.Add(new Token() { Kind = "Introduce", Lexeme = token });
-      }      
-      else if(token.Length > 0) //At this point only keywords should be left BUT NO WAIT STILL : AND :=
+        tokens.Add(new Token() { Kind = "Introduce", Lexeme = token });
+      }
+      else if (token.Length > 0)
       {
-        tokens.Add(new Token() { Kind = "KeyWord", Lexeme = token });
+        tokens.Add(new Token() { Kind = "Identifier", Lexeme = token });
       }
     }
     public void createErrorToken(String token, String kind)
     {
       if (kind == "BadInt")
       {
-        tokens.Add(new Token() { Kind = "Error", Lexeme = "Bad integer: " + token });
+        tokens.Add(new Token() { Kind = "Error", Lexeme = "Lexical error: Bad integer: " + token });
       }
     }
   }
 
   class Parser
-  {
-    public string read(string path)
-    {
-      return "";
 
+  {
+    private String program;
+    private List<Token> tokens;
+    private Token currToken;
+    public void parse(List<Token> scannedTokens)
+    {
+      tokens = scannedTokens;
+
+      statements();
+    }
+
+    public void statements()
+    {
+      currToken = tokens[0];
+      tokens.RemoveAt(0);
+      while (tokens.Count > 0)
+      {
+        statement();
+      }
+    }
+    public void statement()
+    {
+      currToken = tokens[0];
+      tokens.RemoveAt(0);
+      while (currToken.Lexeme != ";")
+      {
+        switch (currToken.Kind)
+        {
+          case "Var":
+            return;
+          case "Identifier":
+            return;
+          case "For":
+            return;
+          case "Print":
+            return;
+          case "Assert":
+            return;
+        }
+      }
     }
   }
 
@@ -249,4 +309,27 @@ namespace LexicalAnalysis
     public string Kind { get; set; }
     public string Lexeme { get; set; }
   }
+
+  public class TreeNode<T>
+  {
+
+    public T Data { get; set; }
+    public TreeNode<T> Parent { get; set; }
+    public ICollection<TreeNode<T>> Children { get; set; }
+
+    public TreeNode(T data)
+    {
+      this.Data = data;
+      this.Children = new LinkedList<TreeNode<T>>();
+    }
+
+    public TreeNode<T> AddChild(T child)
+    {
+      TreeNode<T> childNode = new TreeNode<T>(child) { Parent = this };
+      this.Children.Add(childNode);
+      return childNode;
+    }
+
+  }
+
 }
