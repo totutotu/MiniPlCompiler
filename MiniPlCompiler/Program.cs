@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using FileReader;
 using LexicalAnalysis;
 using SyntaxAnalysis;
+using SemanticAnalysis;
 using Helpers;
 
 namespace MiniPlCompiler

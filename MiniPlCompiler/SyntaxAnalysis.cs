@@ -14,6 +14,8 @@ namespace SyntaxAnalysis
     private Token currToken;
     private int parentheses = 0;
 
+    private int errors = 0;
+
     public Parser(List<Token> scannedTokens)
     {
       tokens = scannedTokens;
@@ -21,6 +23,7 @@ namespace SyntaxAnalysis
     public void parse()
     {
       statements();
+      Console.WriteLine("Errors from syntax analysis: " + errors);
     }
 
     public void statements()
@@ -30,7 +33,6 @@ namespace SyntaxAnalysis
       while (tokens.Count > 0)
       {
         statement();
-        Console.WriteLine(currToken.Lexeme);
       }
     }
     public void statement()
@@ -50,6 +52,7 @@ namespace SyntaxAnalysis
           case "For":
             return;
           case "Print":
+            print();
             return;
           case "Assert":
             return;
@@ -85,19 +88,23 @@ namespace SyntaxAnalysis
                       return;
                     default:
                       Console.WriteLine("Expected ; or Assign after type decleration, got " + currToken.Lexeme);
+                      errors++;
                       return;
                   }
                 default:
                   Console.WriteLine("Expected : for variable declaration, got: " + currToken.Lexeme);
+                  errors++;
                   return;
               }
             default:
               Console.WriteLine("Expected an identifier for variable, got: " + currToken.Lexeme);
+              errors++;
               return;
 
           }
         default:
           Console.Write("Variable declaration error: tried to name the variable " + currToken.Lexeme);
+          errors++;
           return;
       }
     }
@@ -111,8 +118,15 @@ namespace SyntaxAnalysis
           finalOperator();
           return;
         case "End": //this was finalOperator
+          if (parentheses != 0)
+          {
+            Console.WriteLine("Incorrect amount of parentheses");
+            errors++;
+            return;
+          }
           return;
         case "ParenthClose":
+          parentheses--;
           return;
       }
     }
@@ -132,6 +146,7 @@ namespace SyntaxAnalysis
           operand();
           return;
         case "ParenthStart":
+          parentheses++;
           expression();
           return;
         case "UnOperator":
@@ -139,6 +154,7 @@ namespace SyntaxAnalysis
           return;
         default:
           Console.WriteLine("Expression error: expected a value, identifier, or (, got:  " + currToken.Lexeme);
+          errors++;
           return;
       }
     }
@@ -155,12 +171,32 @@ namespace SyntaxAnalysis
         switch (currToken.Kind)
         {
           case "End":
+            if (parentheses != 0)
+            {
+              Console.WriteLine("Incorrect amount of parentheses");
+              errors++;
+              return;
+            }
             return;
           case "ParenthClose":
             parentheses--;
+            currToken = tokens[0];
+            tokens.RemoveAt(0);
+            switch (currToken.Kind)
+            {
+              case "End":
+                if (parentheses != 0)
+                {
+                  Console.WriteLine("Incorrect amount of parentheses");
+                  errors++;
+                  return;
+                }
+                return;
+            }
             return;
           default:
             Console.WriteLine("Expression error: Expected; or ), got: " + currToken.Lexeme);
+            errors++;
             return;
         }
       }
@@ -172,6 +208,7 @@ namespace SyntaxAnalysis
           return;
         default:
           Console.WriteLine("Unary Operand error: expected opreand, found : " + currToken.Lexeme);
+          errors++;
           return;
       }
     }
@@ -194,21 +231,46 @@ namespace SyntaxAnalysis
           }
           else
           {
+            errors++;
             Console.WriteLine("Expected assigning an expression, got " + currToken.Lexeme);
           }
         }
         else
         {
+          errors++;
           Console.WriteLine("Expected variable declaration type, got " + currToken.Lexeme);
           return;
         }
       }
       else
       {
+        errors++;
         Console.WriteLine("Expected introducing a variable with : , got: " + currToken.Lexeme);
       }
     }
+    public void print()
+    {
+      currToken = tokens[0];
+      tokens.RemoveAt(0);
+      if (currToken.Kind == "Identifier" || currToken.Kind == "String")
+      {
+        currToken = tokens[0];
+        tokens.RemoveAt(0);
+        if (currToken.Kind == "End")
+        {
+          return;
+        }
+        else
+        {
+          errors++;
+          Console.WriteLine("Expected ; after print, got: " + currToken.Lexeme);
+        }
+      }
+      else
+      {
+        errors++;
+        Console.WriteLine("Expected something printable, got: " + currToken.Lexeme);
+      }
+    }
   }
-
-
 }
