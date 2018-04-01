@@ -47,6 +47,10 @@ namespace LexicalAnalysis
             handleCompletedToken(sb.ToString());
             handleCompletedToken(currentChar.ToString());
             sb.Clear();
+
+
+
+
           }
           isColon = false;
         }
@@ -265,6 +269,7 @@ namespace LexicalAnalysis
     private String program;
     private List<Token> tokens;
     private Token currToken;
+    private int parentheses = 0;
     public void parse(List<Token> scannedTokens)
     {
       tokens = scannedTokens;
@@ -290,6 +295,7 @@ namespace LexicalAnalysis
         switch (currToken.Kind)
         {
           case "Var":
+            variableDeclaration();
             return;
           case "Identifier":
             return;
@@ -302,6 +308,123 @@ namespace LexicalAnalysis
         }
       }
     }
+
+    public void variableDeclaration()
+    {
+      currToken = tokens[0];
+      tokens.RemoveAt(0);
+      switch (currToken.Kind)
+      {
+        case "Identifier":
+          currToken = tokens[0];
+          tokens.RemoveAt(0);
+          switch (currToken.Kind)
+          {
+            case "Colon":
+              currToken = tokens[0];
+              tokens.RemoveAt(0);
+              switch (currToken.Kind)
+              {
+                case "Type":
+                  currToken = tokens[0];
+                  tokens.RemoveAt(0);
+                  switch (currToken.Kind)
+                  {
+                    case "Assign":
+                      expression();
+                      return;
+                    case "End":
+                      return;
+                    default:
+                      Console.WriteLine("Expected ; or Assign after type decleration, got " + currToken.Lexeme);
+                      return;
+                  }
+                default:
+                  Console.WriteLine("Expected : for variable declaration, got: " + currToken.Lexeme);
+                  return;
+              }
+            default:
+              Console.WriteLine("Expected an identifier for variable, got: " + currToken.Lexeme);
+              return;
+
+          }
+        default:
+          Console.Write("Variable declaration error: tried to name the variable " + currToken.Lexeme);
+          return;
+      }
+    }
+    public void operand()
+    {
+      currToken = tokens[0];
+      tokens.RemoveAt(0);
+      switch (currToken.Kind)
+      {
+        case "Operator":
+          finalOperator();
+          return;
+        case "End": //this was finalOperator
+          return;
+        case "ParenthClose":
+          return;
+      }
+    }
+    public void expression()
+    {
+      currToken = tokens[0];
+      tokens.RemoveAt(0);
+      switch (currToken.Kind)
+      {
+        case "Int":
+          operand();
+          return;
+        case "String":
+          operand();
+          return;
+        case "Identifier":
+          operand();
+          return;
+        case "ParenthStart":
+          expression();
+          return;
+        case "UnOperator":
+          finalOperator();
+          return;
+        default:
+          Console.WriteLine("Expression error: expected a value, identifier, or (, got:  " + currToken.Lexeme);
+          return;
+      }
+    }
+
+    public void finalOperator() //after this expression finished
+    {
+      currToken = tokens[0];
+      tokens.RemoveAt(0);
+
+      if (currToken.Kind == "Int" || currToken.Kind == "String" || currToken.Kind == "Identifier")
+      {
+        currToken = tokens[0];
+        tokens.RemoveAt(0);
+        switch (currToken.Kind)
+        {
+          case "End":
+            return;
+          case "ParenthClose":
+            return;
+          default:
+            Console.WriteLine("Expression error: Expected; or ), got: " + currToken.Lexeme);
+            return;
+        }
+      }
+      switch (currToken.Kind)
+      {
+        case "ParenthStart":
+          expression();
+          return;
+        default:
+          Console.WriteLine("Unary Operand error: expected opreand, found : " + currToken.Lexeme);
+          return;
+      }
+    }
   }
 
   public class Token
@@ -309,27 +432,4 @@ namespace LexicalAnalysis
     public string Kind { get; set; }
     public string Lexeme { get; set; }
   }
-
-  public class TreeNode<T>
-  {
-
-    public T Data { get; set; }
-    public TreeNode<T> Parent { get; set; }
-    public ICollection<TreeNode<T>> Children { get; set; }
-
-    public TreeNode(T data)
-    {
-      this.Data = data;
-      this.Children = new LinkedList<TreeNode<T>>();
-    }
-
-    public TreeNode<T> AddChild(T child)
-    {
-      TreeNode<T> childNode = new TreeNode<T>(child) { Parent = this };
-      this.Children.Add(childNode);
-      return childNode;
-    }
-
-  }
-
 }
