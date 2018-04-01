@@ -10,6 +10,8 @@
 
 # Documentation
 
+*This project and documentation is still in progress.*
+
 ## Flow 
 
 The main file is Program.cs. It reads the selected file from the folder /programs, passes the string of the progrman to the Lexical analyser (LexicalAnalysis.cs). 

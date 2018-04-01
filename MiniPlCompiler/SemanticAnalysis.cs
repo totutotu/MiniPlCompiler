@@ -34,12 +34,23 @@ namespace SemanticAnalysis
           if (identifier())
           {
             kindExpected = varTypes[currToken.Lexeme];
-
-            if (tokens[0].Kind == "Assign")
-            {
-              expression();
-            }
           }
+        }
+        else if (currToken.Kind == "String")
+        {
+          kindExpected = "String";
+        }
+        else if (currToken.Kind == "Int")
+        {
+          kindExpected = "Int";
+        }
+        else if (currToken.Kind == "Boolean")
+        {
+          kindExpected = "Boolean";
+        }
+        else if (currToken.Kind == "Assign" || currToken.Kind == "print")
+        {
+          expression();
         }
       }
     }
@@ -67,7 +78,18 @@ namespace SemanticAnalysis
 
     public void expression()
     {
-
+      // this doesn't work since an expression can start with a (
+      if (currToken.Kind == "Print")
+      {
+        kindExpected = tokens[0].Kind; // If printing, the expression can be any type
+      }
+      // as long as the expression continues; Until ';' , '..', operator, 'do'
+      // expect the same kind of variables
+      while (true)
+      {
+        currToken = tokens[0];
+        tokens.RemoveAt(0);
+      }
     }
   }
 }
