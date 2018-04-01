@@ -8,6 +8,20 @@
 
 ```dotnet MiniPlComplier.csproj```
 
+# Documentation
+
+## Flow 
+
+The main file is Program.cs. It reads the selected file from the folder /programs, passes the string of the progrman to the Lexical analyser (LexicalAnalysis.cs). 
+
+
+After the lexical checking the text is passed to the Syntax analysis checking, which creates the AST and checks the validity of the programs syntax.
+
+After passing the syntax check starts the semantical analysing.
+
+If no errors have been found the execution of the program happens itn the Execution.cs file. 
+
+
 ## Lexical analysis
 
 The lexical analysis phase is driven by the Scanner. The scanner scans through the program and creates a List of Tokens (Token consists of type and lexeme), and passes the list to the Parser. Separation so Parser-driven functionality, where each token is asked by the parses might be refactored later. 

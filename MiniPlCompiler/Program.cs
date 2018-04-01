@@ -1,7 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Collections.Generic;
 using FileReader;
 using LexicalAnalysis;
+using SyntaxAnalysis;
+using Helpers;
 
 namespace MiniPlCompiler
 {
@@ -14,8 +17,10 @@ namespace MiniPlCompiler
       if (program != null)
       {
         Scanner scanner = new Scanner(program);
-        scanner.scan();
-      }
+        List<Token> tokens = scanner.scan();
+        Parser parser = new Parser(tokens);
+        parser.parse();
+      }  
     }
   }
 }

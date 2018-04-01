@@ -1,6 +1,7 @@
 using System;
 using System.Text;
 using System.Collections.Generic;
+using Helpers;
 
 namespace LexicalAnalysis
 {
@@ -24,43 +25,41 @@ namespace LexicalAnalysis
       program = text;
     }
 
-    public void scan()
+    public List<Token> scan()
     {
       for (int i = 0; i < program.Length; i++)
       {
         currentChar = program[i];
+
         if (sb.Length == 0)
         {
           isInteger = Char.IsNumber(currentChar);
         }
-
-        if (isColon)
+        if (isWhiteSpace(currentChar))
+        {
+          handleCompletedToken(sb.ToString());
+          sb.Clear();
+          continue;
+        }
+        else if (isColon)
         {
           if (currentChar == '=')
           {
             sb.Append(currentChar.ToString());
             handleCompletedToken(sb.ToString());
             sb.Clear();
+            isColon = false;
+
+            continue;
           }
           else
           {
             handleCompletedToken(sb.ToString());
-            handleCompletedToken(currentChar.ToString());
             sb.Clear();
-
-
-
-
           }
           isColon = false;
         }
-
-        if (isWhiteSpace(currentChar))
-        {
-          handleCompletedToken(sb.ToString());
-          sb.Clear();
-        }
-        else if (currentChar == ';')
+        if (currentChar == ';')
         {
           handleCompletedToken(sb.ToString());
           handleEndLine(currentChar);
@@ -87,10 +86,10 @@ namespace LexicalAnalysis
         }
         else if (currentChar == ':')
         {
-          handleCompletedToken(sb.ToString());
-          sb.Clear();
+          sb.Append(currentChar.ToString());
+          isColon = true;
         }
-        else if (true) // read the next char to complete token
+        else if (true)
         {
           if (isInteger)
           {
@@ -104,6 +103,7 @@ namespace LexicalAnalysis
       }
 
       tokens.ForEach(token => Console.WriteLine(token.Lexeme + ", Type: " + token.Kind));
+      return tokens;
     }
 
     public void handleOperators(Char a)
@@ -261,175 +261,5 @@ namespace LexicalAnalysis
         tokens.Add(new Token() { Kind = "Error", Lexeme = "Lexical error: Bad integer: " + token });
       }
     }
-  }
-
-  class Parser
-
-  {
-    private String program;
-    private List<Token> tokens;
-    private Token currToken;
-    private int parentheses = 0;
-    public void parse(List<Token> scannedTokens)
-    {
-      tokens = scannedTokens;
-
-      statements();
-    }
-
-    public void statements()
-    {
-      currToken = tokens[0];
-      tokens.RemoveAt(0);
-      while (tokens.Count > 0)
-      {
-        statement();
-      }
-    }
-    public void statement()
-    {
-      currToken = tokens[0];
-      tokens.RemoveAt(0);
-      while (currToken.Lexeme != ";")
-      {
-        switch (currToken.Kind)
-        {
-          case "Var":
-            variableDeclaration();
-            return;
-          case "Identifier":
-            return;
-          case "For":
-            return;
-          case "Print":
-            return;
-          case "Assert":
-            return;
-        }
-      }
-    }
-
-    public void variableDeclaration()
-    {
-      currToken = tokens[0];
-      tokens.RemoveAt(0);
-      switch (currToken.Kind)
-      {
-        case "Identifier":
-          currToken = tokens[0];
-          tokens.RemoveAt(0);
-          switch (currToken.Kind)
-          {
-            case "Colon":
-              currToken = tokens[0];
-              tokens.RemoveAt(0);
-              switch (currToken.Kind)
-              {
-                case "Type":
-                  currToken = tokens[0];
-                  tokens.RemoveAt(0);
-                  switch (currToken.Kind)
-                  {
-                    case "Assign":
-                      expression();
-                      return;
-                    case "End":
-                      return;
-                    default:
-                      Console.WriteLine("Expected ; or Assign after type decleration, got " + currToken.Lexeme);
-                      return;
-                  }
-                default:
-                  Console.WriteLine("Expected : for variable declaration, got: " + currToken.Lexeme);
-                  return;
-              }
-            default:
-              Console.WriteLine("Expected an identifier for variable, got: " + currToken.Lexeme);
-              return;
-
-          }
-        default:
-          Console.Write("Variable declaration error: tried to name the variable " + currToken.Lexeme);
-          return;
-      }
-    }
-    public void operand()
-    {
-      currToken = tokens[0];
-      tokens.RemoveAt(0);
-      switch (currToken.Kind)
-      {
-        case "Operator":
-          finalOperator();
-          return;
-        case "End": //this was finalOperator
-          return;
-        case "ParenthClose":
-          return;
-      }
-    }
-    public void expression()
-    {
-      currToken = tokens[0];
-      tokens.RemoveAt(0);
-      switch (currToken.Kind)
-      {
-        case "Int":
-          operand();
-          return;
-        case "String":
-          operand();
-          return;
-        case "Identifier":
-          operand();
-          return;
-        case "ParenthStart":
-          expression();
-          return;
-        case "UnOperator":
-          finalOperator();
-          return;
-        default:
-          Console.WriteLine("Expression error: expected a value, identifier, or (, got:  " + currToken.Lexeme);
-          return;
-      }
-    }
-
-    public void finalOperator() //after this expression finished
-    {
-      currToken = tokens[0];
-      tokens.RemoveAt(0);
-
-      if (currToken.Kind == "Int" || currToken.Kind == "String" || currToken.Kind == "Identifier")
-      {
-        currToken = tokens[0];
-        tokens.RemoveAt(0);
-        switch (currToken.Kind)
-        {
-          case "End":
-            return;
-          case "ParenthClose":
-            return;
-          default:
-            Console.WriteLine("Expression error: Expected; or ), got: " + currToken.Lexeme);
-            return;
-        }
-      }
-      switch (currToken.Kind)
-      {
-        case "ParenthStart":
-          expression();
-          return;
-        default:
-          Console.WriteLine("Unary Operand error: expected opreand, found : " + currToken.Lexeme);
-          return;
-      }
-    }
-  }
-
-  public class Token
-  {
-    public string Kind { get; set; }
-    public string Lexeme { get; set; }
   }
 }
