@@ -26,10 +26,10 @@ Integer
 String
 Keyword
 Comment
+End
 
 
-
-## Error Handling
+### Error Handling
 
 Expects an Integer if a token starts with a number. If next char is not :
 1. Integer
@@ -44,6 +44,10 @@ Regex of acceptable input is something like this:
 
 ``` :=|[+\-*\/<>&;()]|[^(_\d][a-zA-Z][_|\d|[a-zA-Z]*|[\d]|["^"][\w|\s]*" ```
 
+## Syntax Analysis
+
+
+
 All of the functions are aimed to be reusable when use more use cases come around except for the for loop, which is handled completely on its own. 
 
-Parenthesis right now accepted always
+Parentheses at the moment are always accepted. 
